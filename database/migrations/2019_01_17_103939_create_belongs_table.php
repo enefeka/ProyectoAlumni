@@ -14,6 +14,7 @@ class CreateBelongsTable extends Migration
     public function up()
     {
         Schema::create('belongs', function (Blueprint $table) {
+            $table->increments('id');
             $table->integer('id_user')->unsigned();
             $table->foreign('id_user')
                   ->references('id')->on('users')

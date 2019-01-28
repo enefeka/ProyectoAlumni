@@ -10,5 +10,4 @@ class Asign extends Model
 
     protected $fillable = ['id_event', 'id_group'];
 
-    protected $primaryKey = ['id_event', 'id_group'];
 }

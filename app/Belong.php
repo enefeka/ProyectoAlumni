@@ -10,5 +10,4 @@ class Belong extends Model
 
     protected $fillable = ['id_user', 'id_group'];
 
-    protected $primaryKey = ['id_user', 'id_group'];
 }

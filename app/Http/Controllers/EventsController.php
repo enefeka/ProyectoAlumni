@@ -10,6 +10,7 @@ use App\Roles;
 use App\Types;
 use App\Privacity;
 use App\Belong;
+use App\Asign;
 use Illuminate\Http\Request;
 use \Firebase\JWT\JWT;
 
@@ -72,11 +73,18 @@ class EventsController extends Controller
             $eventDB->id_user = $user->id;
             $eventDB->save();
             foreach ($array_id_group as $key => $idGroup) {
-                $props = array('id_event' => $eventDB->id , 'id_group' => $idGroup);
-                var_dump($props);exit;
-                $asignDB = new Asign($props);
+
+                $groupDB = Groups::find($idGroup);
+                if (empty($groupDB)) {
+                    $eventDB->delete();
+                    return $this->error(400, 'No existe el tipo de grupo indicado');
+                }
+                $asignDB = new Asign();
+                $asignDB->id_event = $eventDB->id;
+                $asignDB->id_group = $idGroup;
                 $asignDB->save();
             }
+
 
             return $this->error(200, 'Evento creado');
 
@@ -279,6 +287,35 @@ class EventsController extends Controller
             return $this->error(500, $e->getMessage());
         }
     }
+
+    
+    public function  get_find()
+    {
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+        $id = Users::where('email', $userData->email)->first()->id;
+        if (empty($_GET['search'])) 
+        {
+          return $this->error(400, 'Falta parámetro obligatorio (search)');
+        }
+        $search = $_GET['search'];
+        if (!isset($_GET['type']) )
+        {
+          return $this->error(400, 'Faltan parámetros obligatorios (type, 0 -> todos, 1-> eventos, 2-> ofertas trabajo, 3 -> notificaciones, 4 -> noticias)');
+        }
+
+        $type = $_GET['type'];
+
+        if ($type == 0) {
+            $query = Events::where('title', 'like', $search)->get();
+            return $this->error(200, 'Eventos', $query->title);
+        }
+   
+
+    }
+
 
     public function index()
     {

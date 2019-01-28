@@ -14,6 +14,7 @@ class CreateAsignsTable extends Migration
     public function up()
     {
         Schema::create('asigns', function (Blueprint $table) {
+            $table->increments('id');
             $table->integer('id_event')->unsigned();
             $table->foreign('id_event')
                   ->references('id')->on('events')

@@ -31,6 +31,7 @@ Route::post('createevent', 'EventsController@post_create');
 Route::post('updateevent', 'EventsController@post_update');
 Route::get('listevents', 'EventsController@get_events');
 Route::get('eventdata', 'EventsController@get_event');
+Route::get('searchevent', 'EventsController@get_find');
 Route::post('deleteevent', 'EventsController@post_delete');
 Route::post('createcomment', 'CommentsController@post_create');
 Route::post('deletecomment', 'CommentsController@post_delete');
