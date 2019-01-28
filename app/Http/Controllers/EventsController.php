@@ -309,10 +309,20 @@ class EventsController extends Controller
         $type = $_GET['type'];
 
         if ($type == 0) {
-            $query = Events::where('title', 'like', $search)->get();
-            return $this->error(200, 'Eventos', $query->title);
+            $events = Events::where('title', 'like', $search)->get();
+            $eventTitles = [];
+            $eventDescriptions = [];
+            foreach ($events as $event) {
+                array_push($eventTitles, $event->title);
+                array_push($eventDescriptions, $event->description);
+            }
+            return response()->json([
+                'eventos' => $eventTitles,
+                'descripción' => $eventDescriptions,
+        ]);
         }
-   
+
+
 
     }
 
