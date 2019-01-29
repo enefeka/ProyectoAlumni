@@ -10,5 +10,4 @@ class Friend extends Model
 
     protected $fillable = ['id_user_receive', 'id_user_send', 'state'];
 
-    protected $primaryKey = ['id_user_receive', 'id_user_send'];
 }

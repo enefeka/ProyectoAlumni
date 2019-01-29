@@ -5,26 +5,14 @@ namespace App\Http\Controllers;
 use App\Users;
 use App\Roles;
 use App\Privacity;
+use App\Friend;
 use Illuminate\Http\Request;
 use \Firebase\JWT\JWT;
+use Illuminate\Support\Facades\Mail;
 
 class UsersController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function post_create()
     {
         try {
@@ -90,10 +78,8 @@ class UsersController extends Controller
         }
         $id = $userData->id;
         $user = Users::find($id);
-
         $user->password = $password;
         $user->save();
-
         return $this->error(200, 'Contraseña cambiada');
     }
     
@@ -109,6 +95,11 @@ class UsersController extends Controller
             $email = $_POST['email'];
             $password = $_POST['password'];
             $key = $this->key;
+            $users = Users::where('email', $email)->get();
+            if ($users->isEmpty()) { 
+                return $this->error(400, "Ese usuario no existe");
+            }
+
 
             if(self::checkLogin($email, $password)){ 
 
@@ -156,12 +147,7 @@ class UsersController extends Controller
             return $this->error(500, $e->getMessage());
         }
     }
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+
     public function post_update()
     {
         $headers = getallheaders();
@@ -169,11 +155,13 @@ class UsersController extends Controller
         $key = $this->key;
         $userData = JWT::decode($token, $key, array('HS256'));
         $id_user = $userData->id;
+        $id = $_POST['id'];
         $user = Users::find($id_user);
-        if ($user->id !== 1) {
+
+        if ($user->id_rol != 1 && $userData->id != $id) {
             return $this->error(401, 'No tienes permiso');
         }
-        $id = $_POST['id'];
+
 
         if (empty($_POST['id'])) {
             return $this->error(400, 'Introduce la id del usuario');
@@ -282,55 +270,81 @@ class UsersController extends Controller
         ]);
     } 
 
-    public function store(Request $request)
+    public function post_recover(Request $request)
     {
-        //
+        if (!isset($_POST['email'])) 
+        {
+            return $this->error(401, 'Introduzca su email');
+        }    
+        $email = $_POST['email'];
+        if (self::recoverPassword($email)) {
+            $userRecover = Users::where('email', $email)->first();
+            $id = $userRecover->id;
+            $pwdSent = Users::where('email', $userRecover->email)->first()->password;
+            $dataEmail = array(
+                'pwd' => $pwdSent,
+            );
+            Mail::send('emails.welcome', $dataEmail, function($message){
+                $emailRecipient = $_POST['email'];
+                $message->from('proyectogpass@gmail.com', 'Recuperación contraseña');
+                $message->to($emailRecipient)->subject('Recuperación contraseña');
+            });
+            return "Contraseña Enviada";
+
+
+        }
+        else
+        {
+            return response("Los datos no son correctos", 403)->header('Access-Control-Allow-Origin', '*');
+        }
+
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Users  $users
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Users $users)
+
+    public function post_sendRequest()
     {
-        //
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+
+        if (empty($_POST['id_user'])) 
+        {
+          return $this->error(400, 'Introduzca la ID del usuario');
+        }
+        $id_user = $_POST['id_user'];
+
+        try {
+
+            $userBD = Users::where('id', $id_user)->first();
+            if ($userBD == null) 
+            {
+                return $this->error(400, 'No existe el usuario');
+            }
+
+            
+        $friend = Friend::where('state' , 1)
+                    ->where('id_user_send', $userData->id)
+                    ->where('id_user_receive', $id_user)
+                    ->orWhere('id_user_send', $id_user)
+                    ->orWhere('id_user_receive', $userData->id)
+                    ->get();
+        $arrFriend = (array)$friend;
+        $isFriendEmpty = array_filter($arrFriend);           
+            
+        if (!empty($isFriendEmpty)) 
+        {
+            return $this->error(400, 'Ya existe una petición existente entre ambos usuarios o ya sois amigos');
+            }
+            else{
+                return $this->error(400, 'holi');
+        }
+            
+        } catch (Exception $e) {
+            
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Users  $users
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Users $users)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Users  $users
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Users $users)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Users  $users
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Users $users)
-    {
-        //
-    }
 
     public function userNotRegistered($email)
     {

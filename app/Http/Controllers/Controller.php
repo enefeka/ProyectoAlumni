@@ -42,5 +42,15 @@ class Controller extends BaseController
         }
         return false;
     }
+    protected function recoverPassword($email)
+    {
+        $userRecover = Users::where('email', $email)->first();
+        $emailRecover = $userRecover->email;
+        if($emailRecover == $email)
+        {
+            return true;
+        }
+        return false;
+    }
 
 }

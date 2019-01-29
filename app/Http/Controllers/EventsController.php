@@ -310,6 +310,10 @@ class EventsController extends Controller
 
         if ($type == 0) {
             $events = Events::where('title', 'like', $search)->get();
+            if (count($events) == 0)
+            {
+                return $this->error(400, 'No existen eventos');
+            }
             $eventTitles = [];
             $eventDescriptions = [];
             foreach ($events as $event) {
@@ -319,6 +323,30 @@ class EventsController extends Controller
             return response()->json([
                 'eventos' => $eventTitles,
                 'descripción' => $eventDescriptions,
+        ]);
+        }
+        else
+            {
+                $typeDB = Types::find($type);
+                if ($typeDB == null) {
+                    return $this->error(400, 'Parametro type no valido');
+                }
+                $events = Events::where('title', 'like', $search)
+                                ->where('id_type', $type)
+                                ->get();
+                if (count($events) == 0)
+                {
+                    return $this->error(400, 'No existen eventos');
+                }
+                $eventTitles = [];
+                $eventDescriptions = [];
+                foreach ($events as $event) {
+                    array_push($eventTitles, $event->title);
+                    array_push($eventDescriptions, $event->description);
+            }
+                return response()->json([
+                    'eventos' => $eventTitles,
+                    'descripción' => $eventDescriptions,
         ]);
         }
 
