@@ -26,7 +26,11 @@ Route::post('updateuser', 'UsersController@post_update');
 Route::post('deleteuser', 'UsersController@post_delete');
 Route::post('recover', 'UsersController@post_recover');
 Route::post('sendrequest' , 'UsersController@post_sendRequest');
+Route::post('responserequest', 'UsersController@post_responseRequest');
+Route::post('deletefriend', 'UsersController@post_deleteFriend');
+Route::post('cancelrequest', 'UsersController@post_cancelRequest');
 Route::get('listusers', 'UsersController@get_allusers');
+Route::get('validatemail', 'UsersController@get_validateMail');
 
 Route::post('creategroup', 'GroupsController@post_create');
 Route::post('deletegroup', 'GroupsController@post_delete');

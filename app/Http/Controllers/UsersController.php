@@ -246,29 +246,7 @@ class UsersController extends Controller
             return $this->error(500, $e->getMessage());
         }
     }
-    public function get_allusers()
-    {
-        $headers = getallheaders();
-        $token = $headers['Authorization'];
-        $key = $this->key;
-        $userData = JWT::decode($token, $key, array('HS256'));
-        $id_user = $userData->id;
-        $user = Users::find($id_user);
-        if ($user->id !== 1) {
-            return $this->error(401, 'No tienes permiso');
-        }
-        $users = Users::where('is_registered', 1)->get();
-        $userNames = [];
-        $userRoles = [];
-        foreach ($users as $user) {
-            array_push($userNames, $user->username);
-            array_push($userRoles, $user->id_rol);
-        }
-        return response()->json([
-            'users' => $userNames,
-            'roles' => $userRoles,
-        ]);
-    } 
+
 
     public function post_recover(Request $request)
     {
@@ -322,29 +300,239 @@ class UsersController extends Controller
                 return $this->error(400, 'No existe el usuario');
             }
 
-            
+        $userId = $userData->id;    
         $friend = Friend::where('state' , 1)
                     ->where('id_user_send', $userData->id)
                     ->where('id_user_receive', $id_user)
-                    ->orWhere('id_user_send', $id_user)
-                    ->orWhere('id_user_receive', $userData->id)
+                    ->orWhere(function ($query) use($id_user, $userId) {
+                        $query->where('id_user_send', $id_user)
+                              ->where('id_user_receive', $userId);
+                    })
                     ->get();
         $arrFriend = (array)$friend;
-        $isFriendEmpty = array_filter($arrFriend);           
+        $isFriendEmpty = array_filter($arrFriend);
+         
             
         if (!empty($isFriendEmpty)) 
         {
             return $this->error(400, 'Ya existe una petición existente entre ambos usuarios o ya sois amigos');
-            }
-            else{
-                return $this->error(400, 'holi');
         }
             
+        $newFriend = new Friend();
+        $newFriend->id_user_send = $userData->id;
+        $newFriend->id_user_receive = $id_user;
+        $newFriend->state = 1;
+        $newFriend->save();
+
+            return $this->error(200, 'Peticion enviada a '. $userBD->name);
+            
         } catch (Exception $e) {
+            return $this->error(500, $e->getMessage());    
+        }
+    }
+
+    public function post_responseRequest()
+    {
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+
+        if (empty($_POST['type']) || empty($_POST['id_user'])) 
+        {
+          return $this->error(400, 'Faltan parámetros obligatorios (id_user o type) ');
+        }
+
+        if ($_POST['type'] != 2 && $_POST['type'] != 3) {
+            return $this->error(400, 'El tipo enviado no es valido');
+        }
+        $id_user = $_POST['id_user'];
+        $type = $_POST['type'];
+
+        try {
+            $friend = Friend::where('state' , 1)
+                ->where('id_user_send', $id_user)
+                ->where('id_user_receive', $userData->id)
+                ->first();
+            $arrFriend = (array)$friend;
+            $isFriendEmpty = array_filter($arrFriend);
+            if (empty($isFriendEmpty)) 
+            {
+                return $this->error(400, 'No existe la petición de amistad');
+            }
+            $friend->state = $type;
+            $friend->save();
+
+            if ($type==2) {
+                return $this->error(200, 'Solicitud de amistad Aceptada');
+            }else{
+                $friend->delete();
+                return $this->error(200, 'Solicitud de amistad Denegada');
+            }
+            
+        } catch (Exception $e) {
+
+                return $this->error(500, $e->getMessage());
             
         }
     }
 
+
+    public function post_deleteFriend()
+    {
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+
+        if (empty($_POST['id_user'])) 
+        {
+          return $this->error(400, 'Introduzca la ID del Usuario');
+        }
+        $id_user = $_POST['id_user'];
+
+        try {
+            
+            
+            $userBD = Users::where('id', $id_user)->first();
+
+            if ($userBD == null) {
+                return $this->error(400, 'No existe el usuario');
+            }
+            
+            $userId = $userData->id;
+            $friend = Friend::where('state' , 2)
+                        ->where('id_user_send', $userData->id)
+                        ->where('id_user_receive', $id_user)
+                        ->orWhere(function ($query) use($id_user, $userId) {
+                                $query->where('id_user_send', $id_user)
+                                    ->where('id_user_receive', $userId);
+                    })
+                    ->first();
+            $arrFriend = (array)$friend;
+            $isFriendEmpty = array_filter($arrFriend);
+
+            if (empty($isFriendEmpty)) 
+            {
+                return $this->error(400, 'Este usuario no existe en tu lista de amigos');
+            }
+            
+            $friend->delete();
+
+                return $this->error(200, 'Has borrado al usuario de tu lista de amigos');
+
+            } 
+                catch (Exception $e) 
+                {
+                    return $this->error(500, $e->getMessage());
+                }
+    }
+
+
+    public function post_cancelRequest()
+    {
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+
+        if (empty($_POST['id_user'])) 
+        {
+          return $this->error(400, 'Introduzca la ID del Usuario');
+        }
+        $id_user = $_POST['id_user'];
+
+        try {
+            $userBD = Users::where('id', $id_user)->first();
+
+            if ($userBD == null) {
+                return $this->error(400, 'No existe el usuario');
+            }
+
+            $friend = Friend::where('state' , 1)
+                ->where('id_user_send', $userData->id)
+                ->where('id_user_receive', $id_user)
+                ->first();
+            $arrFriend = (array)$friend;
+            $isFriendEmpty = array_filter($arrFriend);
+            if (empty($isFriendEmpty)) 
+            {
+                return $this->error(400, 'No existe la petición de amistad');
+            }
+
+            $friend->delete();
+
+            return $this->error(200, 'Petición de amistad cancelada');
+            
+        } catch (Exception $e) {
+
+            return $this->error(500, $e->getMessage());
+            
+        }
+    }
+
+    public function get_allusers()
+    {
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+        $id_user = $userData->id;
+        $user = Users::find($id_user);
+        if ($user->id !== 1) {
+            return $this->error(401, 'No tienes permiso');
+        }
+        $users = Users::where('is_registered', 1)->get();
+        $userNames = [];
+        $userRoles = [];
+        foreach ($users as $user) {
+            array_push($userNames, $user->username);
+            array_push($userRoles, $user->id_rol);
+        }
+        return response()->json([
+            'users' => $userNames,
+            'roles' => $userRoles,
+        ]);
+    }
+
+
+    public function get_validateMail()
+    {
+        if (empty($_GET['email'])) {
+            return $this->error(400, 'Faltan parámetros');
+        }
+        $email = $_GET['email'];
+
+        try {
+            
+            $userBD = Users::where('email', $email)->first(); 
+            
+        } catch (Exception $e) {
+            
+        }
+    } 
+
+    function get_validateEmail()
+    {
+
+        try {
+
+            $userDB = Model_Users::find('first', array(
+            'where' => array(
+                array('email', $email),
+                array('is_registered', 1)
+                )
+            )); 
+
+            if($userDB != null){
+                return $this->createResponse(200, 'Correo valido',array('email'=>$email, 'id'=>$userDB->id) );
+            }else{
+                return $this->createResponse(400, 'Email no valido');
+            }
+        } catch (Exception $e) {
+            return $this->createResponse(500, $e->getMessage());
+        }
+    }
 
     public function userNotRegistered($email)
     {
