@@ -16,79 +16,67 @@ use \Firebase\JWT\JWT;
 
 class ChatsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    public function post_create()
     {
-        //
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+
+        if (empty($_POST['id_user'])) {
+            return $this->error(400, 'Introduzca la id del usuario');
+        }
+
+        $id_user = $_POST['id_user'];
+
+        try {
+            $userBD = Users::find($id_user);
+            
+            if (empty($userBD)) {
+                return $this->error(400, "No existe el usuario para crear un chat");
+            }
+
+            $id = $userData->id;
+            $chat = Chats::where('id_user1', $userData->id)
+                         ->where('id_user2', $id_user)
+                         ->orWhere(function($query) use($id_user, $id){
+                            $query->where('id_user1', $id_user)
+                                  ->where('id_user2', $id);
+                         })
+                        ->first();
+
+            if ($chat != null) {
+                return $this->error(400, "Ya existe un chat con ese usuario");
+            }
+
+            $newChat = new Chats();
+            $newChat->id_user1 = $userData->id;
+            $newChat->id_user2 = $id_user;
+            $newChat->save();
+
+            return $this->error(200, "Chat creado con éxito");
+        } catch (Exception $e) {
+            return $this->error(500, $e->getMessage());
+        }
+    }
+    
+    public function post_sendMessage()
+    {
+
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function get_messages()
     {
-        //
+
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function get_chats()
     {
-        //
+
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Chats  $chats
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Chats $chats)
+    public function get_UsersToChat()
     {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Chats  $chats
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Chats $chats)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Chats  $chats
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Chats $chats)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Chats  $chats
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Chats $chats)
-    {
-        //
     }
 }

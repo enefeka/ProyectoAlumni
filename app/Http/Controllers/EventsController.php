@@ -16,11 +16,7 @@ use \Firebase\JWT\JWT;
 
 class EventsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function post_create()
     {
         $headers = getallheaders();
@@ -144,6 +140,37 @@ class EventsController extends Controller
         }
     }
 
+    public function post_delete()
+    {
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+        $id_user = $userData->id;
+        $user = Users::find($id_user);
+        if ($user->id !== 1) {
+            return $this->error(401, 'No tienes permiso');
+        }
+        $id = $_POST['id'];
+        if (empty($_POST['id'])) {
+            return $this->error(400, 'Introduce la id del evento');
+        }
+        try {
+            $eventBD = Events::find($id);
+            if ($eventBD == null) {
+                return $this->error(400, 'El evento no existe');
+            }
+            if ($eventBD->id_user == $user->id || $user->id_rol == 1) {
+                $eventBD->delete();
+                return $this->error(200, 'El evento ha sido borrado');
+            }
+            return $this->error(401, 'No autorizado');
+        
+        } catch (Exception $e) {
+            return $this->error(500, $e->getMessage());
+        }
+    }
+
 
     public function get_events()
     {
@@ -253,40 +280,11 @@ class EventsController extends Controller
         ]);
             
         } catch (Exception $e) {
-            return $this->error(500, $e->getMessage());
             
-        }
-        }
-    public function post_delete()
-    {
-        $headers = getallheaders();
-        $token = $headers['Authorization'];
-        $key = $this->key;
-        $userData = JWT::decode($token, $key, array('HS256'));
-        $id_user = $userData->id;
-        $user = Users::find($id_user);
-        if ($user->id !== 1) {
-            return $this->error(401, 'No tienes permiso');
-        }
-        $id = $_POST['id'];
-        if (empty($_POST['id'])) {
-            return $this->error(400, 'Introduce la id del evento');
-        }
-        try {
-            $eventBD = Events::find($id);
-            if ($eventBD == null) {
-                return $this->error(400, 'El evento no existe');
-            }
-            if ($eventBD->id_user == $user->id || $user->id_rol == 1) {
-                $eventBD->delete();
-                return $this->error(200, 'El evento ha sido borrado');
-            }
-            return $this->error(401, 'No autorizado');
-        
-        } catch (Exception $e) {
             return $this->error(500, $e->getMessage());
         }
     }
+
 
     
     public function  get_find()
@@ -326,8 +324,8 @@ class EventsController extends Controller
         ]);
         }
         else
-            {
-                $typeDB = Types::find($type);
+        {
+            $typeDB = Types::find($type);
                 if ($typeDB == null) {
                     return $this->error(400, 'Parametro type no valido');
                 }
@@ -347,82 +345,116 @@ class EventsController extends Controller
                 return response()->json([
                     'eventos' => $eventTitles,
                     'descripción' => $eventDescriptions,
-        ]);
+                ]);
         }
-
-
-
     }
 
-
-    public function index()
+    public function get_types()
     {
-        //
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+
+        try {
+
+            $typesBD = Types::all();
+
+            if ($typesBD == null) 
+            {
+                return $this->error(400, 'No existe ningun tipo');
+            }
+            $typeNames = [];
+            foreach ($typesBD as $type) {
+                array_push($typeNames, $type->name);
+            }
+                return response()->json([
+                    'tipos' => $typeNames,
+                ]);
+            
+        } catch (Exception $e) {
+
+            return $this->error(500, $e->getMessage());
+            
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function get_comments()
     {
-        //
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+
+        if (empty($_GET['id_event'])) 
+        {
+          return $this->error(400, 'Falta parámetros obligatorios (id_event) ');
+        }
+        $id_event= $_GET['id_event'];
+
+        try {
+            $eventDB = Events::find($id_event);
+            if (empty($eventDB)) {
+                return $this->error(400, "No existe el evento");
+            }
+
+            $commentsDB = Comments::where('id_event', $id_event)
+                                    ->get();
+            if (count($commentsDB) == 0) {
+                return $this->error(400, "No existen comentarios");
+            }
+
+            $users = [];
+            $userNames = [];
+            $photos = [];
+            foreach ($commentsDB as $key => $comment) {
+                $userBD = Users::find($comment->id_user);
+                $comment['username'] = $userBD->username;
+                $comment['id_user'] = $userBD->id;
+                $comment['photo'] = $userBD->photo;
+                array_push($users, $comment->id_user);
+                array_push($userNames, $userBD->username);
+                array_push($photos, $userBD->photo);
+            }
+                return response()->json([
+                    'ids' => $users,
+                    'usernames' => $userNames,
+                    'photos' => $photos
+                    ]);
+        } catch (Exception $e) {
+            
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Events  $events
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Events $events)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Events  $events
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Events $events)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Events  $events
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Events $events)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Events  $events
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Events $events)
-    {
-        //
-    }
 }
+
+
+
+
+
+   
+
+
+
+    //         $commentsBD = Model_Comments::find('all', array(
+    //         'where' => array(
+    //             array('id_event',$id_event)
+    //             )
+    //         )); 
+    //         if (empty($commentsBD)) {
+    //             return $this->createResponse(400, "No existen comentarios");
+    //         }
+    //         foreach ($commentsBD as $key => $comment) {
+    //             $userBD = Model_Users::find($comment->id_user);
+    //             $comment['username'] = $userBD->username;
+    //             $comment['id_user'] = $userBD->id;
+    //             $comment['photo'] = $userBD->photo;
+    //         }
+    //         return $this->createResponse(200, "Listado de comentarios", Arr::reindex($commentsBD));
+
+    //     } 
+    //     catch (Exception $e) 
+    //     {
+    //         return $this->createResponse(500, $e->getMessage());
+    //     }
+    // }

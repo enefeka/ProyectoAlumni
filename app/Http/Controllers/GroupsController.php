@@ -12,11 +12,7 @@ use \Firebase\JWT\JWT;
 
 class GroupsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function post_create()
     {
         $headers = getallheaders();
@@ -88,6 +84,16 @@ class GroupsController extends Controller
             return $this->error(500, $e->getMessage());
         }
     }
+    
+    public function post_assign()
+    {
+
+    }
+
+    public function post_unassign()
+    {
+        
+    }
     public function get_groups()
     {
         $headers = getallheaders();
@@ -108,75 +114,14 @@ class GroupsController extends Controller
             'ids' => $groupIds,
         ]);
     } 
-    
-    public function index()
+
+    public function get_groupsByUser()
     {
-        //
+
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function get_groupsByUserCliente()
     {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Groups  $groups
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Groups $groups)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Groups  $groups
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Groups $groups)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Groups  $groups
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Groups $groups)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Groups  $groups
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Groups $groups)
-    {
-        //
     }
 }

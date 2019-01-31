@@ -406,7 +406,7 @@ class UsersController extends Controller
                         ->where('id_user_receive', $id_user)
                         ->orWhere(function ($query) use($id_user, $userId) {
                                 $query->where('id_user_send', $id_user)
-                                    ->where('id_user_receive', $userId);
+                                      ->where('id_user_receive', $userId);
                     })
                     ->first();
             $arrFriend = (array)$friend;
@@ -506,33 +506,124 @@ class UsersController extends Controller
         try {
             
             $userBD = Users::where('email', $email)->first(); 
-            
+
+            if($userBD != null){
+                
+                return $this->error(200, 'Correo valido',array('email'=>$email, 'id'=>$userBD->id) );
+            }else{
+                
+                return $this->error(400, 'Email no valido');
+            }
+
         } catch (Exception $e) {
-            
+                
+                return $this->createResponse(500, $e->getMessage());
         }
     } 
 
-    function get_validateEmail()
-    {
 
+    public function get_friends()
+    {
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+
+
+        $userId = $userData->id;
+
+        $friends = Friend::where('state', 2)
+                    ->where('id_user_send', $userId)
+                    ->orWhere('id_user_receive', $userId)
+                    ->get();
+
+        $friendIds = [];
+        foreach ($friends as $friend) {
+            array_push($friendIds, $friend);
+        }
+
+        $users = Users::where('id', $friend->id_user_receive)
+                        ->orWhere('id', $friend->id_user_send)
+                        ->get();
+        $userIds = [];
+        foreach ($users as $user) {
+            array_push($userIds, $user->name);
+        }
+
+        var_dump($userIds);exit;
+        
+
+        $friend = Friend::where('state' , 2)
+                    ->where('id_user_send', $userId)
+                    ->where('id_user_receive')
+                    ->orWhere(function ($query) use($userId) {
+                        $query->whereHas('id_user_send')
+                              ->where('id_user_receive', $userId);
+                    })
+                    ->get();
+        $arrFriend = (array)$friend;
+        $isFriendEmpty = array_filter($arrFriend);
+
+
+        if (empty($isFriendEmpty)) 
+            {
+                return $this->error(400, 'El usuario no tiene amigos');
+            }
+            else{
+                return $this->error(400, 'holi');
+            }
+    }
+
+
+    public function get_userById()
+    {
         try {
 
-            $userDB = Model_Users::find('first', array(
-            'where' => array(
-                array('email', $email),
-                array('is_registered', 1)
-                )
-            )); 
+            $headers = getallheaders();
+            $token = $headers['Authorization'];
+            $key = $this->key;
 
-            if($userDB != null){
-                return $this->createResponse(200, 'Correo valido',array('email'=>$email, 'id'=>$userDB->id) );
-            }else{
-                return $this->createResponse(400, 'Email no valido');
+            
+            if ($token == null) 
+            {
+                return $this->error(400, 'Permiso denegado');
             }
+            
+            $userData = JWT::decode($token, $key, array('HS256'));
+            $id_user = $userData->id;
+           
+            $id = $_GET['id'];
+
+
+            $userDB = Users::find($id);
+
+            if ($userDB == null) 
+            {
+                return $this->error(400, 'El usuario no existe');
+            }
+
+            $privacity = Privacity::find($userDB->id_privacity);
+
+            $friend = Friend::where('id_user_send', $id)
+                        ->where('id_user_receive', $id_user)    
+                        ->orWhere(function ($query) use($id_user, $id) {
+                             $query->where('id_user_send', $id)
+                                   ->where('id_user_receive', $id_user);
+                    })
+                    ->first();
+
+            return $this->error(200, 'Usuario devuelto: ' . $userDB->name . ' Privacity: ' . $privacity->phone . ' Friend: ' . $friend);
+
+
         } catch (Exception $e) {
-            return $this->createResponse(500, $e->getMessage());
+            
+            return $this->error(500, $e->getMessage());
         }
     }
+
+
+
+
 
     public function userNotRegistered($email)
     {
