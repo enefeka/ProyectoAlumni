@@ -20,6 +20,8 @@ class UsersController extends Controller
             if (empty($_POST['email']) || empty($_POST['password']) ) 
             {
 
+              
+              //return $this->createResponse(400, 'Parametros incorrectos');
               return $this->error(401, 'Debes rellenar todos los campos');
             }
 
@@ -90,14 +92,18 @@ class UsersController extends Controller
 
             if (empty($_POST['email']) || empty($_POST['password']) )
             {
-                return $this->error(400, 'Introduzca todos los campos');
+                //return $this->error(400, 'Introduzca todos los campos');
+                return $this->createResponse(400, 'Parametros incorrectos');
+                
+
             }
             $email = $_POST['email'];
             $password = $_POST['password'];
             $key = $this->key;
             $users = Users::where('email', $email)->get();
             if ($users->isEmpty()) { 
-                return $this->error(400, "Ese usuario no existe");
+                //return $this->error(400, "Ese usuario no existe");
+                return $this->createResponse(400, 'Ese usuario no existe');
             }
 
 
@@ -132,13 +138,20 @@ class UsersController extends Controller
 
                 $privacity = Privacity::find($userSave->id_privacity);
 
-                return response($token);
+                return $this->createResponse(200, 'login correcto', ['token'=>$token, 'user' => $userSave, 'privacity' =>$privacity]);
+
+                
+
+		      //    return response()->json([
+			  //  'message' => $token,
+			    // ]);
 
             }
             else
             {
 
-              return $this->error(400, 'Usuario o contraseña incorrectas');
+              return $this->createResponse(400, 'incorrect password');
+             // return $this->error(400, 'incorrect password');
 
             }
         } 
@@ -489,10 +502,11 @@ class UsersController extends Controller
             array_push($userNames, $user->username);
             array_push($userRoles, $user->id_rol);
         }
-        return response()->json([
-            'users' => $userNames,
-            'roles' => $userRoles,
-        ]);
+        // return response()->json([
+        //     'users' => $userNames,
+        //     'roles' => $userRoles,
+        // ]);
+                return $this->createResponse(200, 'Listado de usuarios', $users);
     }
 
 

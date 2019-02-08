@@ -94,6 +94,10 @@ class GroupsController extends Controller
     {
         
     }
+
+
+ 
+
     public function get_groups()
     {
         $headers = getallheaders();
@@ -102,17 +106,19 @@ class GroupsController extends Controller
         if ($token == null) {
             return $this->error(401, 'El token no es válido');
         }
-        $groups = Groups::whereNotNull('id')->get();
+        // $groups = Groups::whereNotNull('id')->get();
+        $groups = Groups::all();
         $groupNames = [];
         $groupIds = [];
         foreach ($groups as $group) {
             array_push($groupNames, $group->name);
             array_push($groupIds, $group->id);
         }
-        return response()->json([
-            'grupos' => $groupNames,
-            'ids' => $groupIds,
-        ]);
+        // return response()->json([
+        //     'grupos' => $groupNames,
+        //     'ids' => $groupIds,
+        // ]);
+                return $this->createResponse(200, 'Listado de grupos', array('groups' => $groups));
     } 
 
     public function get_groupsByUser()

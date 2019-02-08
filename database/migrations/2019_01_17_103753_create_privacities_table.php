@@ -17,7 +17,7 @@ class CreatePrivacitiesTable extends Migration
             $table->increments('id');
             $table->boolean('phone');
             $table->boolean('localization');
-            $table->timestamps();
+            //$table->timestamps();
         });
 
         $privacity = new App\Privacity();

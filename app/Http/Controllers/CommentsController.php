@@ -52,7 +52,7 @@ class CommentsController extends Controller
 
             $commentDB->save();
 
-            return $this->error(200, 'Comentario añadido');
+            return $this->createResponse(200, 'Comentario añadido', $commentDB);
 
 
             

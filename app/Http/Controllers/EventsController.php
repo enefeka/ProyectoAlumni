@@ -82,7 +82,7 @@ class EventsController extends Controller
             }
 
 
-            return $this->error(200, 'Evento creado');
+            return $this->createResponse(200, 'Evento creado');
 
 
             
@@ -179,21 +179,29 @@ class EventsController extends Controller
         $key = $this->key;
 
         if (!isset($_GET['type'])) {
-            return $this->error(400, 'El parámetro type es obligatorio (0 -> todos, 1 -> eventos, 2 -> ofertas trabajo, 3 -> notificaciones, 4 -> noticias)');
+
+           // return $this->error(400, 'El parámetro type es obligatorio (0 -> todos, 1 -> eventos, 2 -> ofertas trabajo, 3 -> notificaciones, 4 -> noticias)');
+
+        return $this->createResponse(400, 'El parámetro type es obligatorio (0 -> todos, 1 -> eventos, 2 -> ofertas trabajo, 3 -> notificaciones, 4 -> noticias)');
+
         }
         $type = $_GET['type'];
         if ($type == 0) {
-            $events = Events::whereNotNull('id')->get();
+            // $events = Events::whereNotNull('id')->get();
+            $events = Events::all();
             $eventTitles = [];
             $eventDescriptions = [];
             foreach ($events as $event) {
                 array_push($eventTitles, $event->title);
                 array_push($eventDescriptions, $event->description);
         }
-            return response()->json([
-                'eventos' => $eventTitles,
-                'descripción' => $eventDescriptions,
-        ]);
+
+        //     return response()->json([
+        //         'eventos' => $eventTitles,
+        //         'hola' => $eventDescriptions,
+        // ]);
+        return $this->createResponse(200, 'Listado de eventos', $events);
+
         }
         if ($type == 1) {
             $events = Events::where('id_type', 1)->get();
@@ -242,12 +250,14 @@ class EventsController extends Controller
                 array_push($eventTitles, $event->title);
                 array_push($eventDescriptions, $event->description);
         }
-            return response()->json([
-                'eventos' => $eventTitles,
-                'descripción' => $eventDescriptions,
-        ]);
+        //     return response()->json([
+        //         'eventos' => $eventTitles,
+        //         'descripción' => $eventDescriptions,
+        // ]);
+                    return $this->createResponse(200, 'Listado de noticias', $events);
         }
     } 
+
 
     public function get_event()
     {
@@ -256,7 +266,11 @@ class EventsController extends Controller
         $key = $this->key;
 
         if (!isset($_GET['id'])) {
-            return $this->error(400, 'El parámetro id es obligatorio');
+
+
+             return $this->createResponse(400, 'el Parametro id es obligatorio');
+
+            //return $this->error(400, 'El parámetro id es obligatorio');
         }
         $id = $_GET['id'];
         try {
@@ -274,10 +288,13 @@ class EventsController extends Controller
                 $comment['photo'] = $userBD->photo;
             }
 
-            return response()->json([
-                'eventos' => $event,
-                'comentarios' => $commentsBD,
-        ]);
+        //     return response()->json([
+        //         'eventos' => $event,
+        //         'comentarios' => $commentsBD,
+        // ]);
+        $commentReverse = $commentsBD->reverse();
+        return $this->createResponse(200, 'Evento y comentarios', array('event' => $event, 'comments' => $commentReverse));
+
             
         } catch (Exception $e) {
             
@@ -368,10 +385,11 @@ class EventsController extends Controller
             foreach ($typesBD as $type) {
                 array_push($typeNames, $type->name);
             }
-                return response()->json([
-                    'tipos' => $typeNames,
-                ]);
-            
+                // return response()->json([
+                //     'tipos' => $typeNames,
+                // ]);
+            return $this->createResponse(200, 'Listado de tipos', $typesBD);
+
         } catch (Exception $e) {
 
             return $this->error(500, $e->getMessage());
