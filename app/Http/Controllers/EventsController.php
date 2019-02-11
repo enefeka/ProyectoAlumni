@@ -276,9 +276,12 @@ class EventsController extends Controller
         try {
             $event = Events::find($id);
             if ($event == null) {
-                return $this->error(400, 'No existe el evento');
+                return $this->createResponse(400, 'No existe el evento');
+                //return $this->error(400, 'No existe el evento');
             }
-            $commentsBD = Comments::where('id_event', $id)->get();
+            $commentsBD = Comments::where('id_event', $id)->get()->all();
+
+
 
 
             foreach ($commentsBD as $key => $comment) {
@@ -292,9 +295,9 @@ class EventsController extends Controller
         //         'eventos' => $event,
         //         'comentarios' => $commentsBD,
         // ]);
-        $commentReverse = $commentsBD->reverse();
-        return $this->createResponse(200, 'Evento y comentarios', array('event' => $event, 'comments' => $commentReverse));
+        // $commentsReverse = array_reverse($arrayComments);
 
+        return $this->createResponse(200, 'Evento y comentarios', array('event' => $event, 'comments' => Controller::reindex(array_reverse($commentsBD))));
             
         } catch (Exception $e) {
             
@@ -422,23 +425,25 @@ class EventsController extends Controller
                 return $this->error(400, "No existen comentarios");
             }
 
-            $users = [];
-            $userNames = [];
-            $photos = [];
-            foreach ($commentsDB as $key => $comment) {
-                $userBD = Users::find($comment->id_user);
-                $comment['username'] = $userBD->username;
-                $comment['id_user'] = $userBD->id;
-                $comment['photo'] = $userBD->photo;
-                array_push($users, $comment->id_user);
-                array_push($userNames, $userBD->username);
-                array_push($photos, $userBD->photo);
-            }
-                return response()->json([
-                    'ids' => $users,
-                    'usernames' => $userNames,
-                    'photos' => $photos
-                    ]);
+            // $users = [];
+            // $userNames = [];
+            // $photos = [];
+            // foreach ($commentsDB as $key => $comment) {
+            //     $userBD = Users::find($comment->id_user);
+            //     $comment['username'] = $userBD->username;
+            //     $comment['id_user'] = $userBD->id;
+            //     $comment['photo'] = $userBD->photo;
+            //     array_push($users, $comment->id_user);
+            //     array_push($userNames, $userBD->username);
+            //     array_push($photos, $userBD->photo);
+            // }
+            //     return response()->json([
+            //         'ids' => $users,
+            //         'usernames' => $userNames,
+            //         'photos' => $photos
+            //         ]);
+
+            return $this->createResponse(200, "Listado de comentarios", $commentsDB);
         } catch (Exception $e) {
             
         }

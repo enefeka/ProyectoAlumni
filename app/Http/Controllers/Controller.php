@@ -43,6 +43,16 @@ class Controller extends BaseController
         return false;
     }
     
+    public static function reindex($arr)
+    {
+        $arr = array_merge($arr);
+
+        foreach ($arr as $k => $v) {
+            is_array($v) and $v = static::reindex($v);
+        }
+
+        return $arr;
+    }
 
 
     protected function recoverPassword($email)
