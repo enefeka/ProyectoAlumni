@@ -20,49 +20,64 @@ class UsersController extends Controller
             if (empty($_POST['email']) || empty($_POST['password']) ) 
             {
 
-              
-              //return $this->createResponse(400, 'Parametros incorrectos');
-              return $this->error(401, 'Debes rellenar todos los campos');
+                return $this->createResponse(401, 'Debes rellenar todos los campos');
             }
 
             if(strlen($_POST['password']) < 5 || strlen($_POST['password']) > 12){
-                return $this->error(400, 'La contraseña ha de tener entre 5 y 12 caracteres');
+                return $this->createResponse(400, 'La contraseña ha de tener entre 5 y 12 caracteres');
             }
 
             $email = $_POST['email'];
             $password = $_POST['password'];
+            $username = explode("@", $email)[0];
 
-            if($this->userNotRegistered($email))
-            { 
+            $userDB = Users::where('email', $email)->first();
 
-                $newPrivacity = new Privacity(array('phone' => 0,'localization' => 0));
-                $newPrivacity->save();
-                $props = array('password' => $password, 'id_privacity' => $newPrivacity->id, 'is_registered' => 1);
-
-
-                $newUser = Users::find('first', array(
-                   'where' => array(
-                       array('email', $email)
-
-                       ),
-                   ));
-
-                $newUser->set($props);
-                $newUser->save();
-
-                return $this->error(200, 'Usuario creado', ['user' => $newUser]);
-
+            if ($userDB != null) {
+                return $this->createResponse(400, 'El email ya existe');
             }
-            else
-            { //Si el email no es valido ( no esta en la bbdd o ya esta registrado )
 
-                return $this->error(400, 'E-mail no valido o ya esta registrado');
-            } 
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $this->createResponse(400, 'Introduzca un emáil válido');
+            }
 
-        }
+
+            $mockData = [
+                "jeff@gmail.com",
+                "juanma@gmail.com",
+                "carlos@gmail.com",
+                "daniel@gmail.com",
+                "dario@gmail.com",
+                "juanma@gmail.com",
+            ];
+
+            $mails = $mockData;
+            if (!in_array($email, $mails)) {
+                
+                return $this->createResponse(401, 'Introduce un email que esté en la base de datos');
+            }
+
+
+            $newPrivacity = new Privacity();
+            $newPrivacity->phone = 0;
+            $newPrivacity->localization = 0;
+            $newPrivacity->save();
+
+            $newUser = new Users();
+            $newUser->email = $email;
+            $newUser->is_registered = 1;
+            $newUser->id_rol = 3;
+            $newUser->password = $password;
+            $newUser->id_privacity = $newPrivacity->id;
+            $newUser->username = $username;
+            $newUser->name = $username;
+            $newUser->save();
+
+            return $this->createResponse(200, 'Usuario registrado');
+}
         catch (Exception $e) 
         {
-            return $this->error(500, $e->getMessage());
+            return $this->createResponse(500, $e->getMessage());
 
         }      
     } 
