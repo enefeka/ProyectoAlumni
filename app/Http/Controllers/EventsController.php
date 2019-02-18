@@ -197,7 +197,7 @@ class EventsController extends Controller
         }
 
         //     return response()->json([
-        //         'eventos' => $eventTitles,
+        //         'eventos' => $eventTitles,9
         //         'hola' => $eventDescriptions,
         // ]);
         return $this->createResponse(200, 'Listado de eventos', $events);
@@ -260,6 +260,32 @@ class EventsController extends Controller
                     return $this->createResponse(200, 'Eventos', $events);
         }
     } 
+    public function get_eventsAndroid()
+        {
+            $headers = getallheaders();
+            $token = $headers['Authorization'];
+            $key = $this->key;
+
+            if (!isset($_GET['type'])) {
+
+
+            return $this->createResponse(400, 'El parámetro type es obligatorio (0 -> todos, 1 -> eventos, 2 -> ofertas trabajo, 3 -> notificaciones, 4 -> noticias)');
+
+            }
+            $type = $_GET['type'];
+            if ($type == 0) {
+                $events = Events::all();
+                $eventObject = [];
+                    foreach ($events as $event) {
+                    array_push($eventObject, $event);
+            }
+
+
+            return $this->createResponse(200, 'Listado de eventos', ['event' => $eventObject]);
+
+            }
+
+        } 
 
 
     public function get_event()

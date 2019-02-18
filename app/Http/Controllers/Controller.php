@@ -24,9 +24,9 @@ class Controller extends BaseController
         return  response($json, $code)->header('Access-Control-Allow-Origin', '*');
     }
     
-    protected function success($message, $data = [])
+    protected function success($code, $message, $data = [])
     {
-    	$json = ['message' => $message, 'data' => $data];
+    	$json = ['code' => $code, 'message' => $message, 'data' => $data];
         $json = json_encode($json);
         return  response($json, 200)->header('Access-Control-Allow-Origin', '*');
     }
@@ -69,7 +69,9 @@ class Controller extends BaseController
 
     function createResponse($code, $message, $data = [])
     {
-
+        if ($data == null) {
+           $data = (object)[];
+        }
         return response()->json([
             'code' => $code,
             'message' => $message,
