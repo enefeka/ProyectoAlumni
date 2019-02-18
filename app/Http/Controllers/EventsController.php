@@ -26,7 +26,7 @@ class EventsController extends Controller
         $id_user = $userData->id;
         $user = Users::find($id_user);
         if ($user->id !== 1) {
-            return $this->error(401, 'No tienes permiso');
+            return $this->createResponse(401, 'No tienes permiso');
         }
         $title = $_POST['title'];
         $description = $_POST['description'];
@@ -34,7 +34,7 @@ class EventsController extends Controller
         $id_type = $_POST['id_type'];
 
         if (empty($_POST['title']) || empty($_POST['description']) || empty($_POST['id_group']) || empty($_POST['id_type'])) {
-            return $this->error(400, 'Todos los datos son obligatorios');
+            return $this->createResponse(400, 'Todos los datos son obligatorios');
         }
         try {
 
@@ -44,7 +44,7 @@ class EventsController extends Controller
 
             $typeDB = Types::find($id_type);
             if (empty($typeDB)) {
-                return $this->error(400, 'No existe el tipo de evento indicado');
+                return $this->createResponse(400, 'No existe el tipo de evento indicado');
             }
 
             $eventDB->id_type = $id_type;
@@ -73,7 +73,7 @@ class EventsController extends Controller
                 $groupDB = Groups::find($idGroup);
                 if (empty($groupDB)) {
                     $eventDB->delete();
-                    return $this->error(400, 'No existe el tipo de grupo indicado');
+                    return $this->createResponse(400, 'No existe el tipo de grupo indicado');
                 }
                 $asignDB = new Asign();
                 $asignDB->id_event = $eventDB->id;
@@ -87,7 +87,7 @@ class EventsController extends Controller
 
             
         } catch (Exception $e) {
-            return $this->error(500, $e->getMessage());
+            return $this->createResponse(500, $e->getMessage());
         }
     }
     
@@ -100,17 +100,17 @@ class EventsController extends Controller
         $id_user = $userData->id;
         $user = Users::find($id_user);
         if ($user->id !== 1) {
-            return $this->error(401, 'No tienes permiso');
+            return $this->createResponse(401, 'No tienes permiso');
         }
         $id = $_POST['id'];
 
         if (empty($_POST['id'])) {
-            return $this->error(400, 'Falta el parámetro id');
+            return $this->createResponse(400, 'Falta el parámetro id');
         }
         try {
             $eventBD = Events::find($id);
             if ($eventBD == null) {
-                return $this->error(400, 'El evento no existe');
+                return $this->createResponse(400, 'El evento no existe');
             }
             if (!empty($_POST['title']) ) {
                 $eventBD->title = $_POST['title'];
@@ -130,12 +130,12 @@ class EventsController extends Controller
 
 
             $eventBD->save();
-            return $this->error(200, 'Evento actualizado');
+            return $this->createResponse(200, 'Evento actualizado');
 
             
         } catch (Exception $e) {
            
-           return $this->error(500, $e->getMessage());
+           return $this->createResponse(500, $e->getMessage());
 
         }
     }
@@ -149,25 +149,25 @@ class EventsController extends Controller
         $id_user = $userData->id;
         $user = Users::find($id_user);
         if ($user->id !== 1) {
-            return $this->error(401, 'No tienes permiso');
+            return $this->createResponse(401, 'No tienes permiso');
         }
         $id = $_POST['id'];
         if (empty($_POST['id'])) {
-            return $this->error(400, 'Introduce la id del evento');
+            return $this->createResponse(400, 'Introduce la id del evento');
         }
         try {
             $eventBD = Events::find($id);
             if ($eventBD == null) {
-                return $this->error(400, 'El evento no existe');
+                return $this->createResponse(400, 'El evento no existe');
             }
             if ($eventBD->id_user == $user->id || $user->id_rol == 1) {
                 $eventBD->delete();
-                return $this->error(200, 'El evento ha sido borrado');
+                return $this->createResponse(200, 'El evento ha sido borrado');
             }
-            return $this->error(401, 'No autorizado');
+            return $this->createResponse(401, 'No autorizado');
         
         } catch (Exception $e) {
-            return $this->error(500, $e->getMessage());
+            return $this->createResponse(500, $e->getMessage());
         }
     }
 
@@ -180,7 +180,7 @@ class EventsController extends Controller
 
         if (!isset($_GET['type'])) {
 
-           // return $this->error(400, 'El parámetro type es obligatorio (0 -> todos, 1 -> eventos, 2 -> ofertas trabajo, 3 -> notificaciones, 4 -> noticias)');
+           // return $this->createResponse(400, 'El parámetro type es obligatorio (0 -> todos, 1 -> eventos, 2 -> ofertas trabajo, 3 -> notificaciones, 4 -> noticias)');
 
         return $this->createResponse(400, 'El parámetro type es obligatorio (0 -> todos, 1 -> eventos, 2 -> ofertas trabajo, 3 -> notificaciones, 4 -> noticias)');
 
@@ -211,10 +211,11 @@ class EventsController extends Controller
                 array_push($eventTitles, $event->title);
                 array_push($eventDescriptions, $event->description);
         }
-            return response()->json([
-                'eventos' => $eventTitles,
-                'descripción' => $eventDescriptions,
-        ]);
+        //     return response()->json([
+        //         'eventos' => $eventTitles,
+        //         'descripción' => $eventDescriptions,
+        // ]);
+        return $this->createResponse(200, 'Eventos', $events);
         }
         if ($type == 2) {
             $events = Events::where('id_type', 2)->get();
@@ -224,10 +225,11 @@ class EventsController extends Controller
                 array_push($eventTitles, $event->title);
                 array_push($eventDescriptions, $event->description);
         }
-            return response()->json([
-                'eventos' => $eventTitles,
-                'descripción' => $eventDescriptions,
-        ]);
+        //     return response()->json([
+        //         'eventos' => $eventTitles,
+        //         'descripción' => $eventDescriptions,
+        // ]);
+        return $this->createResponse(200, 'Ofertas de trabajo', $events);
         }
         if ($type == 3) {
             $events = Events::where('id_type', 3)->get();
@@ -237,10 +239,11 @@ class EventsController extends Controller
                 array_push($eventTitles, $event->title);
                 array_push($eventDescriptions, $event->description);
         }
-            return response()->json([
-                'eventos' => $eventTitles,
-                'descripción' => $eventDescriptions,
-        ]);
+        //     return response()->json([
+        //         'eventos' => $eventTitles,
+        //         'descripción' => $eventDescriptions,
+        // ]);
+        return $this->createResponse(200, 'Notificaciones', $events);
         }
         if ($type == 4) {
             $events = Events::where('id_type', 4)->get();
@@ -254,7 +257,7 @@ class EventsController extends Controller
         //         'eventos' => $eventTitles,
         //         'descripción' => $eventDescriptions,
         // ]);
-                    return $this->createResponse(200, 'Listado de noticias', $events);
+                    return $this->createResponse(200, 'Eventos', $events);
         }
     } 
 
@@ -270,14 +273,14 @@ class EventsController extends Controller
 
              return $this->createResponse(400, 'el Parametro id es obligatorio');
 
-            //return $this->error(400, 'El parámetro id es obligatorio');
+            //return $this->createResponse(400, 'El parámetro id es obligatorio');
         }
         $id = $_GET['id'];
         try {
             $event = Events::find($id);
             if ($event == null) {
                 return $this->createResponse(400, 'No existe el evento');
-                //return $this->error(400, 'No existe el evento');
+                //return $this->createResponse(400, 'No existe el evento');
             }
             $commentsBD = Comments::where('id_event', $id)->get()->all();
 
@@ -301,7 +304,7 @@ class EventsController extends Controller
             
         } catch (Exception $e) {
             
-            return $this->error(500, $e->getMessage());
+            return $this->createResponse(500, $e->getMessage());
         }
     }
 
@@ -316,12 +319,12 @@ class EventsController extends Controller
         $id = Users::where('email', $userData->email)->first()->id;
         if (empty($_GET['search'])) 
         {
-          return $this->error(400, 'Falta parámetro obligatorio (search)');
+          return $this->createResponse(400, 'Falta parámetro obligatorio (search)');
         }
         $search = $_GET['search'];
         if (!isset($_GET['type']) )
         {
-          return $this->error(400, 'Faltan parámetros obligatorios (type, 0 -> todos, 1-> eventos, 2-> ofertas trabajo, 3 -> notificaciones, 4 -> noticias)');
+          return $this->createResponse(400, 'Faltan parámetros obligatorios (type, 0 -> todos, 1-> eventos, 2-> ofertas trabajo, 3 -> notificaciones, 4 -> noticias)');
         }
 
         $type = $_GET['type'];
@@ -330,7 +333,7 @@ class EventsController extends Controller
             $events = Events::where('title', 'like', $search)->get();
             if (count($events) == 0)
             {
-                return $this->error(400, 'No existen eventos');
+                return $this->createResponse(400, 'No existen eventos');
             }
             $eventTitles = [];
             $eventDescriptions = [];
@@ -338,23 +341,24 @@ class EventsController extends Controller
                 array_push($eventTitles, $event->title);
                 array_push($eventDescriptions, $event->description);
             }
-            return response()->json([
-                'eventos' => $eventTitles,
-                'descripción' => $eventDescriptions,
-        ]);
+        //     return response()->json([
+        //         'eventos' => $eventTitles,
+        //         'descripción' => $eventDescriptions,
+        // ]);
+            return $this->createResponse(200, 'Evento', $events);
         }
         else
         {
             $typeDB = Types::find($type);
                 if ($typeDB == null) {
-                    return $this->error(400, 'Parametro type no valido');
+                    return $this->createResponse(400, 'Parametro type no valido');
                 }
                 $events = Events::where('title', 'like', $search)
                                 ->where('id_type', $type)
                                 ->get();
                 if (count($events) == 0)
                 {
-                    return $this->error(400, 'No existen eventos');
+                    return $this->createResponse(400, 'No existen eventos');
                 }
                 $eventTitles = [];
                 $eventDescriptions = [];
@@ -362,10 +366,11 @@ class EventsController extends Controller
                     array_push($eventTitles, $event->title);
                     array_push($eventDescriptions, $event->description);
             }
-                return response()->json([
-                    'eventos' => $eventTitles,
-                    'descripción' => $eventDescriptions,
-                ]);
+                // return response()->json([
+                //     'eventos' => $eventTitles,
+                //     'descripción' => $eventDescriptions,
+                // ]);
+                return $this->createResponse(200, 'Evento', $events);
         }
     }
 
@@ -382,7 +387,7 @@ class EventsController extends Controller
 
             if ($typesBD == null) 
             {
-                return $this->error(400, 'No existe ningun tipo');
+                return $this->createResponse(400, 'No existe ningun tipo');
             }
             $typeNames = [];
             foreach ($typesBD as $type) {
@@ -395,7 +400,7 @@ class EventsController extends Controller
 
         } catch (Exception $e) {
 
-            return $this->error(500, $e->getMessage());
+            return $this->createResponse(500, $e->getMessage());
             
         }
     }
@@ -409,20 +414,20 @@ class EventsController extends Controller
 
         if (empty($_GET['id_event'])) 
         {
-          return $this->error(400, 'Falta parámetros obligatorios (id_event) ');
+          return $this->createResponse(400, 'Falta parámetros obligatorios (id_event) ');
         }
         $id_event= $_GET['id_event'];
 
         try {
             $eventDB = Events::find($id_event);
             if (empty($eventDB)) {
-                return $this->error(400, "No existe el evento");
+                return $this->createResponse(400, "No existe el evento");
             }
 
             $commentsDB = Comments::where('id_event', $id_event)
                                     ->get();
             if (count($commentsDB) == 0) {
-                return $this->error(400, "No existen comentarios");
+                return $this->createResponse(400, "No existen comentarios");
             }
 
             // $users = [];

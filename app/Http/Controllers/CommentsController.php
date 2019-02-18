@@ -10,7 +10,7 @@ use App\Roles;
 use App\Types;
 use App\Privacity;
 use App\Belong;
-use Illuminate\Http\Request;
+  use Illuminate\Http\Request;
 use \Firebase\JWT\JWT;
 
 class CommentsController extends Controller
