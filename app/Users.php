@@ -25,4 +25,17 @@ class Users extends Model
     {
     	return $this->hasMany('App\Events');
     }
+
+    public static function reindex($arr)
+    {
+        // reindex this level
+        $arr = array_merge($arr);
+
+        foreach ($arr as $k => &$v)
+        {
+            is_array($v) and $v = static::reindex($v);
+        }
+
+        return $arr;
+    }
 }
