@@ -574,39 +574,44 @@ class UsersController extends Controller
                     ->get();
 
         $friendIds = [];
+
+        
         foreach ($friends as $friend) {
-            array_push($friendIds, $friend);
+            
+            if ($friend->id_user_send == $userId) {
+                $userDetail = Users::findOrFail($friend->id_user_receive);
+                array_push($friendIds, $userDetail);
+
+            }
+            if ($friend->id_user_receive == $userId) {
+                $userDetail = Users::findOrFail($friend->id_user_send);
+                array_push($friendIds, $userDetail);
+            }
         }
+
+        // return response()->json([
+        //     'friends' => $friendIds,
+
+        // ]);
+        return $this->createResponse(200, 'Lista de amigos', $friendIds);
 
         $users = Users::where('id', $friend->id_user_receive)
                         ->orWhere('id', $friend->id_user_send)
                         ->get();
         $userIds = [];
         foreach ($users as $user) {
-            array_push($userIds, $user->name);
+            
+            if ($user->id == $userId) {
+                array_push($friendIds, $friend->id_user_receive);
+            }
         }
-
-        var_dump($userIds);exit;
-        
-
-        $friend = Friend::where('state' , 2)
-                    ->where('id_user_send', $userId)
-                    ->where('id_user_receive')
-                    ->orWhere(function ($query) use($userId) {
-                        $query->whereHas('id_user_send')
-                              ->where('id_user_receive', $userId);
-                    })
-                    ->get();
-        $arrFriend = (array)$friend;
-        $isFriendEmpty = array_filter($arrFriend);
-
 
         if (empty($isFriendEmpty)) 
             {
-                return $this->createResponse(400, 'El usuario no tiene amigos');
+                return $this->error(400, 'El usuario no tiene amigos');
             }
             else{
-                return $this->createResponse(400, 'holi');
+                return $this->error(400, 'holi');
             }
     }
 
