@@ -126,8 +126,80 @@ class GroupsController extends Controller
 
     }
 
+ public function get_usersFromGroup()
+    {
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+        $id_user = $userData->id;
+        $user = Users::find($id_user);
+        if ($user->id !== 1) {
+            return $this->error(401, 'No tienes permiso');
+        }
+
+        $id_group = $_GET['id_group'];
+
+        $members = Belong::where('id_group', $id_group)
+                    ->get();
+
+        foreach ($members as $member) {
+            
+        }
+
+        return $this->createResponse(200, 'Usuarios pertenecientes al grupo', $members);
+    }
+    
+
     public function get_groupsByUserCliente()
     {
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+        $id_user = $userData->id;
+        $user = Users::find($id_user);
+        if ($user->id !== 1) {
+            return $this->error(401, 'No tienes permiso');
+        }
+        
+        $id_user = $_GET['id_user'];
 
+        $belongs = Belong::where('id_user', $id_user)
+                        ->get();
+
+        $arrBelongs = (array)$belongs;
+        $isBelongsEmpty = array_filter($arrBelongs);
+
+
+
+        if (empty($isBelongsEmpty)) {
+                 return $this->createResponse(400, 'El usuario no pertenece a ningun grupo');
+             }
+
+        foreach ($belongs as $key => $belong) {
+                $group = Groups::find($belong->id_group);
+                $groups[] = $group;
+             }
+             // var_dump($group);
+        foreach ($groups as $key => $group) {
+                $belongsGroup = Belong::where('id_group', $group->id)->get();
+             } 
+             // var_dump($belongsGroup);
+        foreach ($belongsGroup as $key => $belongGroup) {
+                $userGroup = Users::where('id', $belongGroup->id_user)->first();
+        }
+            // var_dump($userGroup);
+
+        if ($userGroup != null) {
+            $usersGroup[] = $userGroup;
+        }
+
+        $group['users'] = $usersGroup;
+
+        $usersGroup = [];
+
+        return $this->createResponse(200, 'Grupos a los que pertenece devueltos', array('groups' => Users::reindex($groups)));
+   
     }
 }

@@ -42,6 +42,7 @@ Route::post('unassign', 'GroupsController@post_unassign');
 Route::get('listgroups', 'GroupsController@get_groups');
 Route::get('groupsuser', 'GroupsController@get_groupsByUser');
 Route::get('groupsuserclient', 'GroupsController@get_groupsByUserCliente');
+Route::get('usersfromgroup', 'GroupsController@get_usersFromGroup');
 
 Route::post('createevent', 'EventsController@post_create');
 Route::post('updateevent', 'EventsController@post_update');
