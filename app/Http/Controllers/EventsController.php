@@ -480,6 +480,29 @@ class EventsController extends Controller
         }
     }
 
+
+public function curl_calendar()
+    {
+        $data = "{}";
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+        CURLOPT_URL => "https://script.google.com/macros/s/AKfycbw5ZFBZPJTSfldVIICOdY_K5YhsKEhPSN-H_Hm8x8M8JzARYkbm/exec",
+        CURLOPT_POST => 1,
+        CURLOPT_POSTFIELDS => $data,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_RETURNTRANSFER => true,
+        ));
+
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+        $decode = json_decode($response, true);
+        
+
+        return $this->createResponse(200, 'Calendario', $decode['calendario']);
+    } 
+
 }
 
 

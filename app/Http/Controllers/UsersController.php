@@ -280,11 +280,16 @@ class UsersController extends Controller
 
     public function post_recover(Request $request)
     {
-        if (!isset($_POST['email'])) 
+
+        $email = $_POST['email'];
+        if (empty($_POST['email'])) 
         {
             return $this->createResponse(401, 'Introduzca su email');
         }    
-        $email = $_POST['email'];
+        $users = Users::where('email', $email)->get();
+        if ($users->isEmpty()) { 
+                return $this->createResponse(400, 'Ese usuario no existe');
+            }
         if (self::recoverPassword($email)) {
             $userRecover = Users::where('email', $email)->first();
             $id = $userRecover->id;
@@ -297,16 +302,16 @@ class UsersController extends Controller
                 $message->from('proyectogpass@gmail.com', 'Recuperación contraseña');
                 $message->to($emailRecipient)->subject('Recuperación contraseña');
             });
-            return "Contraseña Enviada";
+            return $this->createResponse(200, "Contraseña Enviada");
 
 
         }
         else
         {
-            return response("Los datos no son correctos", 403)->header('Access-Control-Allow-Origin', '*');
-        }
+            return $this->createResponse(403, "Los datos no son correctos");
 
     }
+}
 
 
     public function post_sendRequest()

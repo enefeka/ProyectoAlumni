@@ -52,6 +52,7 @@ Route::get('searchevent', 'EventsController@get_find');
 Route::get('listtypes', 'EventsController@get_types');
 Route::get('listcomments', 'EventsController@get_comments');
 Route::get('eventsandroid', 'EventsController@get_eventsAndroid');
+Route::get('calendar', 'EventsController@curl_calendar');
 
 Route::post('createcomment', 'CommentsController@post_create');
 Route::post('deletecomment', 'CommentsController@post_delete');
