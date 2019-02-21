@@ -49,6 +49,8 @@ class UsersController extends Controller
                 "daniel@gmail.com",
                 "dario@gmail.com",
                 "juanma@gmail.com",
+                "miguel@gmail.com",
+                "julio@gmail.com",
             ];
 
             $mails = $mockData;

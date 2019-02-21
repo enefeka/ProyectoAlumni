@@ -24,7 +24,7 @@ class ChatsController extends Controller
         $userData = JWT::decode($token, $key, array('HS256'));
 
         if (empty($_POST['id_user'])) {
-            return $this->error(400, 'Introduzca la id del usuario');
+            return $this->createResponse(400, 'Introduzca la id del usuario');
         }
 
         $id_user = $_POST['id_user'];
@@ -33,7 +33,7 @@ class ChatsController extends Controller
             $userBD = Users::find($id_user);
             
             if (empty($userBD)) {
-                return $this->error(400, "No existe el usuario para crear un chat");
+                return $this->createResponse(400, "No existe el usuario para crear un chat");
             }
 
             $id = $userData->id;
@@ -46,7 +46,7 @@ class ChatsController extends Controller
                         ->first();
 
             if ($chat != null) {
-                return $this->error(400, "Ya existe un chat con ese usuario");
+                return $this->createResponse(400, "Ya existe un chat con ese usuario");
             }
 
             $newChat = new Chats();
@@ -54,9 +54,9 @@ class ChatsController extends Controller
             $newChat->id_user2 = $id_user;
             $newChat->save();
 
-            return $this->error(200, "Chat creado con éxito");
+            return $this->createResponse(200, "Chat creado con éxito");
         } catch (Exception $e) {
-            return $this->error(500, $e->getMessage());
+            return $this->createResponse(500, $e->getMessage());
         }
     }
     

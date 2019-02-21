@@ -22,19 +22,19 @@ class GroupsController extends Controller
         $id_user = $userData->id;
         $user = Users::find($id_user);
         if ($user->id !== 1) {
-            return $this->error(401, 'No tienes permiso');
+            return $this->createResponse(401, 'No tienes permiso');
         }
         $name = $_POST['name'];
 
         if (empty($_POST['name'])) {
-            return $this->error(400, 'Introduce el nombre del grupo');
+            return $this->createResponse(400, 'Introduce el nombre del grupo');
         }
         try {
 
             $groups = Groups::where('name', $name)->get();
             foreach ($groups as $group) {
                 if ($group->name == $name) {
-                    return $this->error(400, 'El nombre del grupo ya existe');
+                    return $this->createResponse(400, 'El nombre del grupo ya existe');
                 }
             }
 
@@ -49,10 +49,10 @@ class GroupsController extends Controller
 
             // $belong->save();
 
-            return $this->error(200, 'Grupo creado');
+            return $this->createResponse(200, 'Grupo creado');
             
         } catch (Exception $e) {
-            return $this->error(500, $e->getMessage());
+            return $this->createResponse(500, $e->getMessage());
         }
     }
 
@@ -65,23 +65,23 @@ class GroupsController extends Controller
         $id_user = $userData->id;
         $user = Users::find($id_user);
         if ($user->id !== 1) {
-            return $this->error(401, 'No tienes permiso');
+            return $this->createResponse(401, 'No tienes permiso');
         }
         $id = $_POST['id'];
         if (empty($_POST['id'])) {
-            return $this->error(400, 'Introduce la id del grupo');
+            return $this->createResponse(400, 'Introduce la id del grupo');
         }
         try {
             $groupBD = Groups::find($id);
             if ($groupBD == null) {
-                return $this->error(400, 'El grupo no existe');
+                return $this->createResponse(400, 'El grupo no existe');
             }
 
             $groupBD->delete();
 
-            return $this->error(200, 'Grupo borrado');
+            return $this->createResponse(200, 'Grupo borrado');
         } catch (Exception $e) {
-            return $this->error(500, $e->getMessage());
+            return $this->createResponse(500, $e->getMessage());
         }
     }
     
@@ -104,7 +104,7 @@ class GroupsController extends Controller
         $token = $headers['Authorization'];
         $key = $this->key;
         if ($token == null) {
-            return $this->error(401, 'El token no es válido');
+            return $this->createResponse(401, 'El token no es válido');
         }
         // $groups = Groups::whereNotNull('id')->get();
         $groups = Groups::all();
