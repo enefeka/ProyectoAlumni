@@ -201,6 +201,9 @@ class UsersController extends Controller
             if ($userBD == null) {
                 return $this->createResponse(400, 'El usuario no existe');
             }
+            if (!empty($_POST['name']) ) {
+                $userBD->name = $_POST['name'];
+            }
             if (!empty($_POST['email']) ) {
                 $userBD->email = $_POST['email'];
             }
