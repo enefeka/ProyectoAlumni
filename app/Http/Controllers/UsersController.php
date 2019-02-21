@@ -93,13 +93,13 @@ class UsersController extends Controller
         $password = $_POST['password'];
         $lastPassword = $_POST['lastPassword'];
         if ($lastPassword !== $userData->password) {
-            return $this->error(400, 'La contraseña antigua no es correcta');
+            return $this->createResponse(400, 'La contraseña antigua no es correcta');
         }
         $id = $userData->id;
         $user = Users::find($id);
         $user->password = $password;
         $user->save();
-        return $this->error(200, 'Contraseña cambiada');
+        return $this->createResponse(200, 'Contraseña cambiada');
     }
     
 
@@ -109,7 +109,7 @@ class UsersController extends Controller
 
             if (empty($_POST['email']) || empty($_POST['password']) )
             {
-                //return $this->error(400, 'Introduzca todos los campos');
+                //return $this->createResponse(400, 'Introduzca todos los campos');
                 return $this->createResponse(400, 'Parametros incorrectos');
                 
 
@@ -119,7 +119,7 @@ class UsersController extends Controller
             $key = $this->key;
             $users = Users::where('email', $email)->get();
             if ($users->isEmpty()) { 
-                //return $this->error(400, "Ese usuario no existe");
+                //return $this->createResponse(400, "Ese usuario no existe");
                 return $this->createResponse(400, 'Ese usuario no existe');
             }
 
@@ -168,13 +168,13 @@ class UsersController extends Controller
             {
 
               return $this->createResponse(400, 'incorrect password');
-             // return $this->error(400, 'incorrect password');
+             // return $this->createResponse(400, 'incorrect password');
 
             }
         } 
         catch (Exception $e) 
         {
-            return $this->error(500, $e->getMessage());
+            return $this->createResponse(500, $e->getMessage());
         }
     }
 
@@ -189,17 +189,17 @@ class UsersController extends Controller
         $user = Users::find($id_user);
 
         if ($user->id_rol != 1 && $userData->id != $id) {
-            return $this->error(401, 'No tienes permiso');
+            return $this->createResponse(401, 'No tienes permiso');
         }
 
 
         if (empty($_POST['id'])) {
-            return $this->error(400, 'Introduce la id del usuario');
+            return $this->createResponse(400, 'Introduce la id del usuario');
         }
         try {
             $userBD = Users::find($id);
             if ($userBD == null) {
-                return $this->error(400, 'El usuario no existe');
+                return $this->createResponse(400, 'El usuario no existe');
             }
             if (!empty($_POST['email']) ) {
                 $userBD->email = $_POST['email'];
@@ -217,11 +217,11 @@ class UsersController extends Controller
             if (isset($_POST['phoneprivacity']) && isset($_POST['localizationprivacity'])) {
 
                 if ($_POST['phoneprivacity'] != 0 && $_POST['phoneprivacity'] != 1){
-                    return $this->error(400, 'Valor de phoneprivacity no válido, debe ser 0 ó 1');
+                    return $this->createResponse(400, 'Valor de phoneprivacity no válido, debe ser 0 ó 1');
                 }
 
                 if ($_POST['localizationprivacity'] != 0 && $_POST['localizationprivacity'] != 1){
-                    return $this->error(400, 'Valor de localizationprivacity no válido, debe ser 0 ó 1');
+                    return $this->createResponse(400, 'Valor de localizationprivacity no válido, debe ser 0 ó 1');
                 }
 
                 $privacity = Privacity::find($userBD->id_privacity);
@@ -233,17 +233,17 @@ class UsersController extends Controller
             if (!empty($_POST['id_rol']) ) {
                 $rolDB = Roles::find($_POST['id_rol']);
                 if ($rolDB == null) {
-                    return $this->error(400, 'Rol no valido');
+                    return $this->createResponse(400, 'Rol no valido');
                 }
                 $userBD->id_rol = $_POST['id_rol'];
             }
             $userBD->save();
-            return $this->error(200, 'Usuario actualizado');
+            return $this->createResponse(200, 'Usuario actualizado');
 
             
         } catch (Exception $e) {
            
-           return $this->error(500, $e->getMessage());
+           return $this->createResponse(500, $e->getMessage());
 
         }
     }
@@ -257,23 +257,23 @@ class UsersController extends Controller
         $id_user = $userData->id;
         $user = Users::find($id_user);
         if ($user->id !== 1) {
-            return $this->error(401, 'No tienes permiso');
+            return $this->createResponse(401, 'No tienes permiso');
         }
         $id = $_POST['id'];
         if (empty($_POST['id'])) {
-            return $this->error(400, 'Introduce la id del usuario');
+            return $this->createResponse(400, 'Introduce la id del usuario');
         }
         try {
             $userBD = Users::find($id);
             if ($userBD == null) {
-                return $this->error(400, 'El usuario no existe');
+                return $this->createResponse(400, 'El usuario no existe');
             }
 
             $userBD->delete();
 
-            return $this->error(200, 'Usuario borrado');
+            return $this->createResponse(200, 'Usuario borrado');
         } catch (Exception $e) {
-            return $this->error(500, $e->getMessage());
+            return $this->createResponse(500, $e->getMessage());
         }
     }
 
@@ -282,7 +282,7 @@ class UsersController extends Controller
     {
         if (!isset($_POST['email'])) 
         {
-            return $this->error(401, 'Introduzca su email');
+            return $this->createResponse(401, 'Introduzca su email');
         }    
         $email = $_POST['email'];
         if (self::recoverPassword($email)) {
@@ -318,7 +318,7 @@ class UsersController extends Controller
 
         if (empty($_POST['id_user'])) 
         {
-          return $this->error(400, 'Introduzca la ID del usuario');
+          return $this->createResponse(400, 'Introduzca la ID del usuario');
         }
         $id_user = $_POST['id_user'];
 
@@ -327,7 +327,7 @@ class UsersController extends Controller
             $userBD = Users::where('id', $id_user)->first();
             if ($userBD == null) 
             {
-                return $this->error(400, 'No existe el usuario');
+                return $this->createResponse(400, 'No existe el usuario');
             }
 
         $userId = $userData->id;    
@@ -345,7 +345,7 @@ class UsersController extends Controller
             
         if (!empty($isFriendEmpty)) 
         {
-            return $this->error(400, 'Ya existe una petición existente entre ambos usuarios o ya sois amigos');
+            return $this->createResponse(400, 'Ya existe una petición existente entre ambos usuarios o ya sois amigos');
         }
             
         $newFriend = new Friend();
@@ -354,10 +354,10 @@ class UsersController extends Controller
         $newFriend->state = 1;
         $newFriend->save();
 
-            return $this->error(200, 'Peticion enviada a '. $userBD->name);
+            return $this->createResponse(200, 'Peticion enviada a '. $userBD->name);
             
         } catch (Exception $e) {
-            return $this->error(500, $e->getMessage());    
+            return $this->createResponse(500, $e->getMessage());    
         }
     }
 
@@ -370,11 +370,11 @@ class UsersController extends Controller
 
         if (empty($_POST['type']) || empty($_POST['id_user'])) 
         {
-          return $this->error(400, 'Faltan parámetros obligatorios (id_user o type) ');
+          return $this->createResponse(400, 'Faltan parámetros obligatorios (id_user o type) ');
         }
 
         if ($_POST['type'] != 2 && $_POST['type'] != 3) {
-            return $this->error(400, 'El tipo enviado no es valido');
+            return $this->createResponse(400, 'El tipo enviado no es valido');
         }
         $id_user = $_POST['id_user'];
         $type = $_POST['type'];
@@ -388,21 +388,21 @@ class UsersController extends Controller
             $isFriendEmpty = array_filter($arrFriend);
             if (empty($isFriendEmpty)) 
             {
-                return $this->error(400, 'No existe la petición de amistad');
+                return $this->createResponse(400, 'No existe la petición de amistad');
             }
             $friend->state = $type;
             $friend->save();
 
             if ($type==2) {
-                return $this->error(200, 'Solicitud de amistad Aceptada');
+                return $this->createResponse(200, 'Solicitud de amistad Aceptada');
             }else{
                 $friend->delete();
-                return $this->error(200, 'Solicitud de amistad Denegada');
+                return $this->createResponse(200, 'Solicitud de amistad Denegada');
             }
             
         } catch (Exception $e) {
 
-                return $this->error(500, $e->getMessage());
+                return $this->createResponse(500, $e->getMessage());
             
         }
     }
@@ -417,7 +417,7 @@ class UsersController extends Controller
 
         if (empty($_POST['id_user'])) 
         {
-          return $this->error(400, 'Introduzca la ID del Usuario');
+          return $this->createResponse(400, 'Introduzca la ID del Usuario');
         }
         $id_user = $_POST['id_user'];
 
@@ -427,7 +427,7 @@ class UsersController extends Controller
             $userBD = Users::where('id', $id_user)->first();
 
             if ($userBD == null) {
-                return $this->error(400, 'No existe el usuario');
+                return $this->createResponse(400, 'No existe el usuario');
             }
             
             $userId = $userData->id;
@@ -444,17 +444,17 @@ class UsersController extends Controller
 
             if (empty($isFriendEmpty)) 
             {
-                return $this->error(400, 'Este usuario no existe en tu lista de amigos');
+                return $this->createResponse(400, 'Este usuario no existe en tu lista de amigos');
             }
             
             $friend->delete();
 
-                return $this->error(200, 'Has borrado al usuario de tu lista de amigos');
+                return $this->createResponse(200, 'Has borrado al usuario de tu lista de amigos');
 
             } 
                 catch (Exception $e) 
                 {
-                    return $this->error(500, $e->getMessage());
+                    return $this->createResponse(500, $e->getMessage());
                 }
     }
 
@@ -468,7 +468,7 @@ class UsersController extends Controller
 
         if (empty($_POST['id_user'])) 
         {
-          return $this->error(400, 'Introduzca la ID del Usuario');
+          return $this->createResponse(400, 'Introduzca la ID del Usuario');
         }
         $id_user = $_POST['id_user'];
 
@@ -476,7 +476,7 @@ class UsersController extends Controller
             $userBD = Users::where('id', $id_user)->first();
 
             if ($userBD == null) {
-                return $this->error(400, 'No existe el usuario');
+                return $this->createResponse(400, 'No existe el usuario');
             }
 
             $friend = Friend::where('state' , 1)
@@ -487,16 +487,16 @@ class UsersController extends Controller
             $isFriendEmpty = array_filter($arrFriend);
             if (empty($isFriendEmpty)) 
             {
-                return $this->error(400, 'No existe la petición de amistad');
+                return $this->createResponse(400, 'No existe la petición de amistad');
             }
 
             $friend->delete();
 
-            return $this->error(200, 'Petición de amistad cancelada');
+            return $this->createResponse(200, 'Petición de amistad cancelada');
             
         } catch (Exception $e) {
 
-            return $this->error(500, $e->getMessage());
+            return $this->createResponse(500, $e->getMessage());
             
         }
     }
@@ -510,7 +510,7 @@ class UsersController extends Controller
         $id_user = $userData->id;
         $user = Users::find($id_user);
         if ($user->id !== 1) {
-            return $this->error(401, 'No tienes permiso');
+            return $this->createResponse(401, 'No tienes permiso');
         }
         $users = Users::where('is_registered', 1)->get();
         $userNames = [];
@@ -530,7 +530,7 @@ class UsersController extends Controller
     public function get_validateMail()
     {
         if (empty($_GET['email'])) {
-            return $this->error(400, 'Faltan parámetros');
+            return $this->createResponse(400, 'Faltan parámetros');
         }
         $email = $_GET['email'];
 
@@ -540,10 +540,10 @@ class UsersController extends Controller
 
             if($userBD != null){
                 
-                return $this->error(200, 'Correo valido',array('email'=>$email, 'id'=>$userBD->id) );
+                return $this->createResponse(200, 'Correo valido',array('email'=>$email, 'id'=>$userBD->id) );
             }else{
                 
-                return $this->error(400, 'Email no valido');
+                return $this->createResponse(400, 'Email no valido');
             }
 
         } catch (Exception $e) {
@@ -598,10 +598,10 @@ class UsersController extends Controller
 
         if (empty($isFriendEmpty)) 
             {
-                return $this->error(400, 'El usuario no tiene amigos');
+                return $this->createResponse(400, 'El usuario no tiene amigos');
             }
             else{
-                return $this->error(400, 'holi');
+                return $this->createResponse(400, 'holi');
             }
     }
 
@@ -617,7 +617,7 @@ class UsersController extends Controller
             
             if ($token == null) 
             {
-                return $this->error(400, 'Permiso denegado');
+                return $this->createResponse(400, 'Permiso denegado');
             }
             
             $userData = JWT::decode($token, $key, array('HS256'));
@@ -630,7 +630,7 @@ class UsersController extends Controller
 
             if ($userDB == null) 
             {
-                return $this->error(400, 'El usuario no existe');
+                return $this->createResponse(400, 'El usuario no existe');
             }
 
             $privacity = Privacity::find($userDB->id_privacity);
@@ -643,12 +643,12 @@ class UsersController extends Controller
                     })
                     ->first();
 
-            return $this->error(200, 'Usuario devuelto: ' . $userDB->name . ' Privacity: ' . $privacity->phone . ' Friend: ' . $friend);
+            return $this->createResponse(200, 'Usuario devuelto: ' . $userDB->name . ' Privacity: ' . $privacity->phone . ' Friend: ' . $friend);
 
 
         } catch (Exception $e) {
             
-            return $this->error(500, $e->getMessage());
+            return $this->createResponse(500, $e->getMessage());
         }
     }
 
