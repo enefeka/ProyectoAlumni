@@ -653,7 +653,8 @@ class UsersController extends Controller
                     })
                     ->first();
 
-            return $this->createResponse(200, 'Usuario devuelto: ' . $userDB->name . ' Privacity: ' . $privacity->phone . ' Friend: ' . $friend);
+            // return $this->createResponse(200, 'Usuario devuelto: ' . $userDB->name . ' Privacity: ' . $privacity->phone . ' Friend: ' . $friend);
+            return $this->createResponse(200, 'Usuario devuelto', array('user' => $userDB, 'privacity' => $privacity, 'friend' => $friend));
 
 
         } catch (Exception $e) {
