@@ -508,7 +508,67 @@ class UsersController extends Controller
             
         }
     }
+public function post_insertUser()
+    {
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+        $id_user = $userData->id;
+        $user = Users::find($id_user);
+        if ($user->id !== 1) {
+            return $this->createResponse(401, 'No tienes permiso');
+        } 
+        if (empty($_POST['email']) || empty($_POST['id_rol']) || empty($_POST['id_group']) || empty($_POST['name'])) {
+            return $this->createResponse(400, 'Falta parametro email, id_rol, id_group, name');
+        }
+        $email = $_POST['email'];
+        $id_rol = $_POST['id_rol'];
+        $id_group = $_POST['id_group'];
+        $name = $_POST['name'];
+        $username = explode("@", $email)[0];
 
+        try {
+            $rolDB = Roles::find($id_rol);
+            if ($rolDB == null) {
+               return $this->createResponse(400, 'Rol no valido (1-> admin, 2-> coordinador, 3-> profesor, 4-> alumno)');
+            }
+            
+            $groupDB = Groups::find($id_group);
+            if ($groupDB == null) {
+                return $this->createResponse(400, 'id_group no válido');
+            }
+
+            $userDB = Users::where('email', $email)->first();
+
+            if ($userDB != null) {
+                return $this->createResponse(400, 'El email ya existe');
+            }
+
+            $newUser = new Users();
+            $newUser->email = $email;
+            $newUser->is_registered = 1;
+            $newUser->id_rol = $id_rol;
+            $newUser->password = "temporal";
+            $newUser->id_privacity = 1;
+            $newUser->name = $name;
+            $newUser->username = $username;
+            $newUser->save();
+
+
+
+            $belongDB = new Belong();
+            $belongDB->id_user = $newUser->id;
+            $belongDB->id_group = $groupDB->id;
+            $belongDB->save();
+            
+            return $this->createResponse(200, 'Usuario insertado con exito');
+
+        } catch (Exception $e) 
+        {
+            return $this->createResponse(500, $e->getMessage());
+        }
+    }
     public function get_allusers()
     {
         $headers = getallheaders();

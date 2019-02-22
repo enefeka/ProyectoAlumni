@@ -29,6 +29,7 @@ Route::post('sendrequest' , 'UsersController@post_sendRequest');
 Route::post('responserequest', 'UsersController@post_responseRequest');
 Route::post('deletefriend', 'UsersController@post_deleteFriend');
 Route::post('cancelrequest', 'UsersController@post_cancelRequest');
+Route::post('insertuser', 'UsersController@post_insertUser');
 Route::get('listusers', 'UsersController@get_allusers');
 Route::get('validatemail', 'UsersController@get_validateMail');
 Route::get('listfriends', 'UsersController@get_friends');
