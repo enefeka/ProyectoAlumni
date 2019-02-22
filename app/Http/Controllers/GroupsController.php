@@ -85,18 +85,117 @@ class GroupsController extends Controller
         }
     }
     
-    public function post_assign()
+   public function post_assign()
     {
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+        $id_user = $userData->id;
+        $user = Users::find($id_user);
+        if ($user->id !== 1) {
+            return $this->error(401, 'No tienes permiso');
+        }
+        if (empty($_POST['id_user']) || empty($_POST['id_group'])) {
+            return $this->createResponse(400, 'Falta parametro id_user, id_group');
+        }
 
+        $id_user = $_POST['id_user'];
+        $id_group = $_POST['id_group'];
+        try {
+            $groupDB = Groups::find($id_group);
+            if ($groupDB == null) 
+            {
+                return $this->createResponse(400, 'El grupo no existe');
+            }
+            $userDB = Users::find($id_user);
+
+            if ($userDB == null) 
+            {
+                return $this->createResponse(400, 'El usuario no existe');
+            }
+            
+
+            $belongDB = Belong::where('id_user', $id_user)
+                              ->where('id_group', $id_group)
+                              ->get();
+
+            
+            $arrBelongs = (array)$belongDB;
+            $isBelongsEmpty = array_filter($arrBelongs);
+
+
+
+            if (!empty($isBelongsEmpty)) {
+                 return $this->createResponse(400, 'El usuario ya está asignado a ese grupo');
+             }
+
+
+            $belongDB = new Belong();
+            $belongDB->id_user = $id_user;
+            $belongDB->id_group = $id_group;
+            $belongDB->save();
+            return $this->createResponse(200, 'Usuario asignado a grupo');
+
+        } catch (Exception $e) 
+        {
+            return $this->createResponse(500, $e->getMessage());
+        }
     }
+
+
+    
 
     public function post_unassign()
     {
-        
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        $userData = JWT::decode($token, $key, array('HS256'));
+        $id_user = $userData->id;
+        $user = Users::find($id_user);
+        if ($user->id !== 1) {
+            return $this->error(401, 'No tienes permiso');
+        }
+        if (empty($_POST['id_user']) || empty($_POST['id_group'])) {
+            return $this->createResponse(400, 'Falta parametro id_user, id_group');
+        }   
+        $id_user = $_POST['id_user'];
+        $id_group = $_POST['id_group'];
+        try {
+            $groupDB = Groups::find($id_group);
+            if ($groupDB == null) 
+            {
+                return $this->createResponse(400, 'El grupo no existe');
+            }
+            $userDB = Users::find($id_user);
+            if ($userDB == null) 
+            {
+                return $this->createResponse(400, 'El usuario no existe');
+            }
+            
+            $belongDB = Belong::where('id_user', $id_user)
+                              ->where('id_group', $id_group)
+                              ->first();
+
+            $arrBelongs = (array)$belongDB;
+            $isBelongsEmpty = array_filter($arrBelongs);
+
+
+
+            if (empty($isBelongsEmpty)) {
+                 return $this->createResponse(400, 'El usuario no pertenece a ese grupo');
+             }
+            
+            $belongDB->delete();
+            
+            return $this->createResponse(200, 'Usuario desasignado del grupo');
+
+        } catch (Exception $e) 
+        {
+            return $this->createResponse(500, $e->getMessage());
+        }
     }
-
-
- 
 
     public function get_groups()
     {
@@ -126,7 +225,7 @@ class GroupsController extends Controller
 
     }
 
- public function get_usersFromGroup()
+    public function get_usersFromGroup()
     {
         $headers = getallheaders();
         $token = $headers['Authorization'];
@@ -140,14 +239,22 @@ class GroupsController extends Controller
 
         $id_group = $_GET['id_group'];
 
-        $members = Belong::where('id_group', $id_group)
+        $belongs = Belong::where('id_group', $id_group)
                     ->get();
 
-        foreach ($members as $member) {
-            
+        $memberIds =[];            
+        foreach ($belongs as $belong) {
+            $member = Users::findOrFail($belong->id_user);
+            array_push($memberIds, $member);
         }
 
-        return $this->createResponse(200, 'Usuarios pertenecientes al grupo', $members);
+
+        // foreach ($members as $member){
+        //     $userObject = Users::where('id', $member->id)->get();
+        //     $userObjects[] = $userObject;
+        // }
+
+        return $this->createResponse(200, 'Usuarios pertenecientes al grupo', $memberIds);
     }
     
 
@@ -201,5 +308,5 @@ class GroupsController extends Controller
 
         return $this->createResponse(200, 'Grupos a los que pertenece devueltos', array('groups' => Users::reindex($groups)));
    
-    }
+    }0
 }
