@@ -260,6 +260,20 @@ class EventsController extends Controller
                     return $this->createResponse(200, 'Eventos', $events);
         }
     } 
+
+
+        public function get_eventsPanel()
+    {
+        $headers = getallheaders();
+        $token = $headers['Authorization'];
+        $key = $this->key;
+        if ($token == null) {
+            return $this->createResponse(401, 'El token no es válido');
+        }
+
+        $events = Events::all();
+        return $this->createResponse(200, 'Eventos', array('eventos' => $events));
+    }
     public function get_eventsAndroid()
         {
             $headers = getallheaders();
